@@ -5,8 +5,8 @@ import os
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
 DATA_PATH  = "data/processed/all_genes_tidy.csv"
-PLOT_DIR   = "plots/exploratory"
-OUTPUT_DIR = "output"
+PLOT_DIR   = "data/plots/exploratory"
+OUTPUT_DIR = "data/output"
 os.makedirs(PLOT_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
