@@ -44,6 +44,9 @@ x_fine  <- 10^y_fine
 
 # Custom panels generation
 library(gridExtra)
+
+`%names_in%` <- function(x, y) x %in% names(y)
+
 plots_cands <- list()
 
 for (gene_name in names(GENE_COLORS)) {
@@ -83,34 +86,63 @@ for (gene_name in names(GENE_COLORS)) {
   
   plots_cands[[gene_name]] <- p_curr
 }
-`%names_in%` <- function(x, y) x %in% names(y)
+
 
 png(file.path(PLOT_DIR, "02_distribution_candidates.png"), width = 16, height = 5, units = "in", res = 150)
 grid.arrange(do.call(arrangeGrob, c(plots_cands, ncol = 3)), 
              top = textGrob("Observed AF Histogram vs. Candidate Distributions\n(working in log10 space for proper density comparison)", gp = gpar(fontsize = 13, fontface = "bold")))
 dev.off()
 
-# ── Plot 3: Wright-Fisher Stationary Distribution ──────────────────────────────
+# ── Plot 3: Why Beta is theoretically motivated ────────────────────────────────
+# Simulate Wright-Fisher stationary distribution and compare to Beta
+
 wf_params <- list(
   list(g="APOE", Ne=10000, mu=1e-5),
   list(g="CYP2C19", Ne=10000, mu=1e-5),
-  list(g="HLA-B", Ne=10000, mu=5e-5)
+  list(g="HLA-B", Ne=10000, mu=5e-5) # higher mutation rate → more diversity
 )
+
 x_wf <- seq(0.001, 0.999, length.out = 500)
+set.seed(42) # Mirroring np.random.seed(42)
 
 wf_plots <- map(wf_params, function(p) {
   theta <- 4 * p$Ne * p$mu
-  wf_df <- tibble(x = x_wf, pdf = dbeta(x_wf, theta, theta))
+  wf_df <- tibble(
+    x = x_wf, 
+    pdf = dbeta(x_wf, theta, theta)
+  )
+  
+  # Format mutation rate nicely for the legend label (e.g., 1e-05)
+  mu_formatted <- format(p$mu, scientific = TRUE)
   
   ggplot(wf_df, aes(x = x, y = pdf)) +
-    geom_line(color = GENE_COLORS[p$g], linewidth = 1) +
+    geom_line(color = GENE_COLORS[p$g], linewidth = 1.5) +
     geom_area(fill = GENE_COLORS[p$g], alpha = 0.2) +
-    labs(title = p$g, subtitle = sprintf("Beta(θ=%.2f, θ)\nNe=%d, μ=%.0e", theta, p$Ne, p$mu),
-         x = "Allele Frequency", y = "Probability Density") +
-    theme_minimal()
+    labs(
+      title = p$g, 
+      subtitle = sprintf("Beta(θ=%.2f, θ)\nNe=%d, μ=%s", theta, p$Ne, mu_formatted),
+      x = "Allele Frequency", 
+      y = "Probability Density"
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 13),
+      plot.subtitle = element_text(size = 10)
+    )
 })
 
-png(file.path(PLOT_DIR, "03_wright_fisher_beta.png"), width = 16, height = 5, units = "in", res = 150)
-grid.arrange(do.call(arrangeGrob, c(wf_plots, ncol = 3)), 
-             top = textGrob("Wright-Fisher Stationary Distribution vs. Beta Distribution\n(theoretical motivation for using Beta to model AF)", gp = gpar(fontsize = 13, fontface = "bold")))
+# Combine panels and export as PNG
+out_file_wf <- file.path(PLOT_DIR, "03_wright_fisher_beta.png")
+
+png(out_file_wf, width = 16, height = 5, units = "in", res = 150)
+grid.arrange(
+  do.call(arrangeGrob, c(wf_plots, ncol = 3)), 
+  top = textGrob(
+    "Wright-Fisher Stationary Distribution vs. Beta Distribution\n(theoretical motivation for using Beta to model AF)", 
+    gp = gpar(fontsize = 13, fontface = "bold")
+  )
+)
 dev.off()
+
+message("Saved → ", out_file_wf)
+message("\nDone.")
