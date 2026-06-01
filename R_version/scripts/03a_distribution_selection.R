@@ -35,19 +35,16 @@ p1 <- ggplot(beta_df, aes(x = x, y = pdf, color = label)) +
 
 ggsave(file.path(PLOT_DIR, "01_beta_distribution_shapes.png"), plot = p1, width = 11, height = 6, dpi = 150)
 
-# ── Plot 2 & 3 Dependencies ───────────────────────────────────────────────────
+# ── Plot 2 & 3 Dependencies (UPDATED WITH VALUES) ─────────────────────────────
 df      <- read_csv("data/processed/all_genes_tidy.csv")
 overall <- df %>% filter(Population == "Overall") %>% drop_na(AF) %>% filter(AF > 0)
 
 y_fine  <- seq(-6, 0, length.out = 2000)
 x_fine  <- 10^y_fine
 
-# Custom panels generation
 library(gridExtra)
-
-`%names_in%` <- function(x, y) x %in% names(y)
-
 plots_cands <- list()
+`%names_in%` <- function(x, y) x %in% names(y)
 
 for (gene_name in names(GENE_COLORS)) {
   sub_data <- overall %>% filter(Gene == gene_name) %>% pull(AF)
@@ -60,33 +57,53 @@ for (gene_name in names(GENE_COLORS)) {
   
   p_frame <- tibble(y = y_fine, x = x_fine)
   
+  # Create dynamic label strings with the calculated values
+  beta_lbl <- "Beta (Not Fitted)"
+  ln_lbl   <- "Lognormal (Not Fitted)"
+  
   if (!is.null(fit_b)) {
     p_frame$beta_pdf <- dbeta(x_fine, fit_b$estimate["shape1"], fit_b$estimate["shape2"]) * x_fine * log(10)
+    # Extract alpha and beta values dynamically
+    a_val <- fit_b$estimate["shape1"]
+    b_val <- fit_b$estimate["shape2"]
+    beta_lbl <- sprintf("Beta MLE\n(α = %.3f, β = %.3f)", a_val, b_val)
   }
+  
   if (!is.null(fit_ln)) {
     p_frame$ln_pdf <- dlnorm(x_fine, fit_ln$estimate["meanlog"], fit_ln$estimate["sdlog"]) * x_fine * log(10)
+    # Extract meanlog and sdlog values dynamically
+    mu_val <- fit_ln$estimate["meanlog"]
+    sd_val <- fit_ln$estimate["sdlog"]
+    ln_lbl <- sprintf("Lognormal MLE\n(μ = %.2f, σ = %.2f)", mu_val, sd_val)
   }
   
   p_curr <- ggplot() +
     geom_histogram(data = tibble(y = log_data), aes(x = y, y = ..density..), bins = 50, fill = GENE_COLORS[gene_name], alpha = 0.4)
   
+  # Map curves using the generated label strings
   if ("beta_pdf" %names_in% p_frame) {
-    lbl <- sprintf("Beta MLE\n(α=%.3f, β=%.3f)", fit_b$estimate["shape1"], fit_b$estimate["shape2"])
-    p_curr <- p_curr + geom_line(data = p_frame, aes(x = y, y = beta_pdf, color = "Beta"), linewidth = 1)
+    p_curr <- p_curr + geom_line(data = p_frame, aes(x = y, y = beta_pdf, color = beta_lbl), linewidth = 1)
   }
   if ("ln_pdf" %names_in% p_frame) {
-    p_curr <- p_curr + geom_line(data = p_frame, aes(x = y, y = ln_pdf, color = "Lognormal"), linetype = "dashed", linewidth = 1)
+    p_curr <- p_curr + geom_line(data = p_frame, aes(x = y, y = ln_pdf, color = ln_lbl), linetype = "dashed", linewidth = 1)
   }
+  
+  # Set up manual color palettes using our custom text labels
+  color_vals <- c("black", "orange")
+  names(color_vals) <- c(beta_lbl, ln_lbl)
   
   p_curr <- p_curr +
     scale_x_continuous(breaks = -6:0, labels = parse(text = paste0("10^", -6:0))) +
-    scale_color_manual(values = c("Beta" = "black", "Lognormal" = "orange")) +
-    labs(title = gene_name, x = "Allele Frequency", y = "Density (log space)", color = "") +
-    theme_minimal()
+    scale_color_manual(values = color_vals) +
+    labs(title = gene_name, x = "Allele Frequency", y = "Density (log space)", color = "Models") +
+    theme_minimal() +
+    theme(
+      legend.text = element_text(size = 8),
+      legend.key.height = unit(0.8, "cm") # Gives extra vertical space for multi-line text strings
+    )
   
   plots_cands[[gene_name]] <- p_curr
 }
-
 
 png(file.path(PLOT_DIR, "02_distribution_candidates.png"), width = 16, height = 5, units = "in", res = 150)
 grid.arrange(do.call(arrangeGrob, c(plots_cands, ncol = 3)), 
