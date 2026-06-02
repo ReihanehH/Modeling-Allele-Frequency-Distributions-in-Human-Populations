@@ -76,17 +76,56 @@ param_heatmap <- function(res, param, title, low_c, high_c, filename) {
 param_heatmap(results, "alpha", "Fitted Beta α per Gene × Population\n(α < 1 → J-shaped; α > 1 → bell-shaped)", "#FFFFE5", "#FE9929", "04_beta_alpha_heatmap.png")
 param_heatmap(results, "beta", "Fitted Beta β per Gene × Population\n(higher β → density concentrated near zero)", "#F7FBFF", "#08519C", "05_beta_beta_heatmap.png")
 
-# Scatter Plot
-p_scatter <- results %>% 
-  filter(converged == TRUE) %>%
-  ggplot(aes(x = alpha, y = beta, color = Gene)) +
-  geom_point(size = 4, alpha = 0.8) +
-  geom_text(aes(label = Pop_Short), hjust = -0.2, vjust = -0.2, size = 3, color = "black") +
-  scale_x_log10() + scale_y_log10() +
-  scale_color_manual(values = GENE_COLORS) +
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "grey") +
-  facet_wrap(~Gene, scales = "free") +
-  labs(title = "Fitted Beta Parameters: α vs β per Gene and Population", x = "α (shape)", y = "β (tail weight)") +
-  theme_minimal() + theme(legend.position = "none")
+# ── Scatter Plot (EXACT PYTHON MATPLOTLIB LOOK & TRUE 45° DIAGONAL) ────────────
+library(gridExtra)
+library(grid)
 
-ggsave(file.path(PLOT_DIR, "06_alpha_vs_beta_scatter.png"), plot = p_scatter, width = 16, height = 5, dpi = 150)
+scatter_plots <- list()
+
+# Create a clean data frame for the true diagonal line to ensure it maps perfectly
+diagonal_line <- tibble(x = c(0.1, 100), y = c(0.1, 100))
+
+for (gene_name in GENES) {
+  gene_data <- results %>% 
+    filter(converged == TRUE, Gene == gene_name)
+  
+  p_gene <- ggplot(gene_data, aes(x = alpha, y = beta)) +
+    # 1. Draw the true mathematical diagonal identity line (y = x)
+    geom_line(data = diagonal_line, aes(x = x, y = y), linetype = "dashed", color = "grey50", linewidth = 0.8) +
+    # 2. Draw data points
+    geom_point(color = GENE_COLORS[gene_name], size = 4, alpha = 0.8) +
+    # 3. Clean label placement (nudged slightly up and right)
+    geom_text(aes(label = Pop_Short), hjust = -0.2, vjust = -0.3, size = 3, color = "black") +
+    # 4. FIX SCALES: True Python log domain stretching from 0.1 to 1.0
+    scale_x_log10(limits = c(0.1, 1.0), breaks = c(0.1, 0.2, 0.5, 1.0), labels = c("0.1", "0.2", "0.5", "1.0")) + 
+    scale_y_log10(limits = c(1, 100),   breaks = c(1, 2, 5, 10, 20, 50, 100)) +
+    labs(
+      title = gene_name, 
+      x = expression(paste(alpha, " (shape)")), 
+      y = expression(paste(beta, " (tail weight)"))
+    ) +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+      axis.title = element_text(size = 11),
+      panel.grid.minor = element_blank(), # Removes cluttered minor lines
+      panel.border = element_rect(color = "grey80", fill = NA, linewidth = 0.5) # Adds a clean frame like matplotlib
+    )
+  
+  scatter_plots[[gene_name]] <- p_gene
+}
+
+# Render and export into a beautiful 1x3 matrix layout
+out_file_scatter <- file.path(PLOT_DIR, "06_alpha_vs_beta_scatter.png")
+
+png(out_file_scatter, width = 16, height = 5, units = "in", res = 150)
+grid.arrange(
+  do.call(arrangeGrob, c(scatter_plots, ncol = 3)), 
+  top = textGrob(
+    "Fitted Beta Parameters: α vs β per Gene and Population", 
+    gp = gpar(fontsize = 14, fontface = "bold")
+  )
+)
+dev.off()
+
+message("Saved Matplotlib-Identical Grid → ", out_file_scatter)
