@@ -35,4 +35,4 @@ This project contains two fully completed parallel architectures, allowing the e
 The underlying maximum likelihood optimization routines achieve absolute mathematical consensus between both environments, providing an informative benchmark on cross-platform visualization behavior.
 
 ## Project Report
-📄 [Read the full project report here](report/Statistical_Data_Analysis_Final_Project.pdf)
+📄 [Read the full project report here](Report/gene_af_report_R.pdf)
