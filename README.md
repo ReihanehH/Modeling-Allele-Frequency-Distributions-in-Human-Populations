@@ -32,7 +32,7 @@ This project contains two fully completed parallel architectures, allowing the e
 * 📂 **`R_version/`**: Core pipeline implemented using `tidyverse`, `fitdistrplus`, `gridExtra`, and `ggplot2` for robust data processing, summary moment-matching, and formal KS-testing.
 * 📂 **`Python_version/`**: Parallel implementation leveraging `pandas`, `scipy.stats`, and `matplotlib` to handle numerical data arrays and render unwarped, publication-quality parameter space annotations without geometric distortion.
 
+The underlying maximum likelihood optimization routines achieve absolute mathematical consensus between both environments, providing an informative benchmark on cross-platform visualization behavior.
+
 ## Project Report
 📄 [Read the full project report here](report/Statistical_Data_Analysis_Final_Project.pdf)
-
-The underlying maximum likelihood optimization routines achieve absolute mathematical consensus between both environments, providing an informative benchmark on cross-platform visualization behavior.
