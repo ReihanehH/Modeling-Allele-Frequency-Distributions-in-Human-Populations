@@ -26,10 +26,6 @@ Accurate statistical models of allele frequency distributions are essential for:
 - Understanding the evolutionary processes that shape human genetic variation.
 
 ---
-
-## What Was Done
-
-
 ## What Was Done
 
 1. **Data Preparation**
