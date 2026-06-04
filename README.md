@@ -25,14 +25,6 @@ Accurate statistical models of allele frequency distributions are essential for:
 - Designing and evaluating algorithms for rare variant detection.
 - Understanding the evolutionary processes that shape human genetic variation.
 
-## Learning Objectives
-
-This project provides practical experience with:
-
-- Probability distributions and statistical modeling.
-- Maximum Likelihood Estimation (MLE) and parameter inference.
-- Hypothesis testing and goodness-of-fit evaluation.
-- Applying concepts from population genetics and statistical physics to biological data.
 ---
 
 ## What Was Done
