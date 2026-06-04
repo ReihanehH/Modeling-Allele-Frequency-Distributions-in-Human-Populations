@@ -2,27 +2,72 @@
 
 This repository contains the final project for the **Statistical Data Analysis** course. The project implements a statistical inference pipeline to fit, evaluate, and compare parametric distributions against empirical human allele frequency (AF) data sourced from the **gnomAD** database across different ancestral backgrounds.
 
-## Project Overview
+# Background: Modeling Allele Frequency Distributions in Human Populations
 
-The core objective of this study is to analyze how varying evolutionary selection pressures shape the frequency distribution of human genomic variants across different loci. We focus on three genes with highly distinct biological profiles and evolutionary contexts:
-* **APOE & CYP2C19**: Highly conserved loci governed primarily by purifying selection, resulting in an abundance of ultra-rare variants.
-* **HLA-B**: A highly polymorphic locus belonging to the major histocompatibility complex (MHC), governed by balancing selection to maintain immune diversity.
+Genetic variation is the foundation of biological diversity. In human populations, much of this variation occurs at specific locations in the genome known as genetic variants, often in the form of Single Nucleotide Polymorphisms (SNPs). Each variant is characterized by an **allele frequency (AF)**, which measures how common a particular genetic variant is within a population. For example, if a variant is observed in 1 out of 100 individuals, its allele frequency is 0.01.
 
+## Why Study Allele Frequency Distributions?
+
+Allele frequencies are not uniformly distributed across the genome. Most genetic variants are extremely rare, while only a small fraction reach high frequencies. These patterns emerge from fundamental evolutionary forces such as mutation, natural selection, and genetic drift.
+
+Studying allele frequency distributions is important because it:
+
+- Provides insight into genetic diversity within and between populations.
+- Helps identify variants that may influence disease susceptibility or drug response.
+- Supports genetic and biomedical research, including personalized medicine.
+- Forms the basis for realistic synthetic genome simulation and population genetics modeling.
+
+## Why Is This Useful?
+
+Accurate statistical models of allele frequency distributions are essential for:
+
+- Simulating realistic synthetic genomic datasets.
+- Designing and evaluating algorithms for rare variant detection.
+- Understanding the evolutionary processes that shape human genetic variation.
+
+## Learning Objectives
+
+This project provides practical experience with:
+
+- Probability distributions and statistical modeling.
+- Maximum Likelihood Estimation (MLE) and parameter inference.
+- Hypothesis testing and goodness-of-fit evaluation.
+- Applying concepts from population genetics and statistical physics to biological data.
 ---
 
 ## What Was Done
 
-1.  **Maximum Likelihood Estimation (MLE)**:
-    * Fitted two-parameter **Beta** and **Lognormal** distributions to overall population data.
-    * Executed a stratified analysis across **10 non-overlapping global sub-populations** to observe shifts in the shape parameters ($\alpha$ and $\beta$).
-2.  **Theoretical Population Genetics Alignment**:
-    * Simulated the theoretical stationary distribution of the neutral **Wright-Fisher model** to evaluate the geometric mismatch between idealized models and real-world census sequencing data.
-3.  **Goodness-of-Fit & Model Diagnostics**:
-    * Evaluated model performance quantitatively using the **Kolmogorov-Smirnov (KS) Test** and compared observed empirical moments (mean and variance) against theoretical expected values.
-    * Diagnosed local structural blind spots (such as zero-inflation effects) utilizing **Empirical Cumulative Distribution Function (ECDF)** overlays and **Quantile-Quantile (Q-Q) plots**.
-4.  **Cross-Platform Visualization Review**:
-    * Analyzed visual rendering trade-offs between environments. Identified log-scale coordinate warping issues within R's graphing engine and successfully resolved them by engineering clear, unwarped parameter scatter grids in Python.
 
+## What Was Done
+
+1. **Data Preparation**
+   - Collected allele frequency data for APOE, HLA-B, and CYP2C19 from gnomAD.
+   - Removed missing values and filtered invalid allele frequencies.
+   - Created both global and population-specific datasets.
+
+2. **Exploratory Data Analysis**
+   - Calculated summary statistics and quantiles.
+   - Visualized allele frequency distributions using histograms, ECDFs, and boxplots.
+   - Compared distributions across genes and populations.
+
+3. **Beta Distribution Modeling**
+   - Fitted Beta distributions to allele frequency data using Maximum Likelihood Estimation (MLE).
+   - Estimated shape parameters (\(\alpha\) and \(\beta\)) for each gene and population.
+
+4. **Model Evaluation**
+   - Assessed goodness-of-fit using the Kolmogorov–Smirnov (KS) test.
+   - Compared empirical and theoretical distributions using Q–Q plots.
+   - Examined deviations between the Beta model and observed data.
+
+5. **Population Analysis**
+   - Repeated the fitting procedure for multiple ancestry groups.
+   - Compared fitted parameters across populations.
+   - Investigated population-specific allele frequency patterns.
+
+6. **Interpretation**
+   - Related the results to population genetics concepts, including mutation, genetic drift, and selection.
+   - Compared observed patterns with expectations from the Wright–Fisher framework.
+   - Discussed limitations of the Beta distribution for modeling real genomic data.
 ---
 
 ## Code Architecture (Dual-Language Implementation)
@@ -31,8 +76,6 @@ This project contains two fully completed parallel architectures, allowing the e
 
 * 📂 **`R_version/`**: Core pipeline implemented using `tidyverse`, `fitdistrplus`, `gridExtra`, and `ggplot2` for robust data processing, summary moment-matching, and formal KS-testing.
 * 📂 **`Python_version/`**: Parallel implementation leveraging `pandas`, `scipy.stats`, and `matplotlib` to handle numerical data arrays and render unwarped, publication-quality parameter space annotations without geometric distortion.
-
-The underlying maximum likelihood optimization routines achieve absolute mathematical consensus between both environments, providing an informative benchmark on cross-platform visualization behavior.
 
 ## Project Report
 📄 [Read the full project report here](Report/gene_af_report_R.pdf)
